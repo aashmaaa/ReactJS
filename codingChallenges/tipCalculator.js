@@ -10,15 +10,33 @@ export default function App() {
 
 function TipCalculator() {
   const [bill, setBill] = useState("");
-  const [percentage, setPercentage] = useState(0);
+  const [percentage1, setPercentage1] = useState(0);
+  const [percentage2, setPercentage2] = useState(0);
+
+  const tip = bill * ((percentage1 + percentage2) / 2 / 100);
+
+  function handleReset() {
+    setBill("");
+    setPercentage1(0);
+    setPercentage2(0);
+  }
 
   return (
     <div>
       <BillInput bill={bill} onSetBill={setBill} />
-      <SelectPercentage>How did you like the service?</SelectPercentage>
-      <SelectPercentage>How did your friend like the service?</SelectPercentage>
-      <Output bill={bill} />
-      <Reset />
+      <SelectPercentage percentage={percentage1} onSelect={setPercentage1}>
+        How did you like the service?
+      </SelectPercentage>
+      <SelectPercentage percentage={percentage2} onSelect={setPercentage2}>
+        How did your friend like the service?
+      </SelectPercentage>
+      {bill > 0 && (
+        <>
+          {" "}
+          <Output bill={bill} tip={tip} />
+          <Reset onReset={handleReset} />
+        </>
+      )}
     </div>
   );
 }
@@ -37,11 +55,14 @@ function BillInput({ bill, onSetBill }) {
   );
 }
 
-function SelectPercentage({ children }) {
+function SelectPercentage({ children, percentage, onSelect }) {
   return (
     <div>
       <label>{children}</label>
-      <select>
+      <select
+        value={percentage}
+        onChange={(e) => onSelect(Number(e.target.value))}
+      >
         <option value="1">It was awful(0%) </option>
         <option value="1">It was good(10%) </option>
         <option value="1">It was awesome(20%)</option>
@@ -50,18 +71,18 @@ function SelectPercentage({ children }) {
   );
 }
 
-function Output({ bill }) {
+function Output({ bill, tip }) {
   return (
     <div>
-      <h3>You pay X (${bill} + $b tip)</h3>
+      <h3>
+        You pay {bill + tip} (${bill} + ${tip} tip)
+      </h3>
     </div>
   );
 }
 
-function Reset() {
-  return (
-    <div>
-      <button onClick={""}>reset</button>
-    </div>
-  );
+function Reset({ onReset }) {
+  return;
+
+  <button onClick={onReset}>Reset</button>;
 }
