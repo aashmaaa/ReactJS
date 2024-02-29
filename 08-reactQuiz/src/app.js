@@ -8,6 +8,10 @@ import Question from "./components/Question";
 import NextButton from "./components/NextButton";
 import Progress from "./components/Progress";
 import FinishScreen from "./components/FinishScreen";
+import Footer from "./components/Footer";
+import Timer from "./components/Timerr";
+
+const SECS_PER_QUESTION = 30;
 
 const initialState = {
   questions: [],
@@ -17,6 +21,8 @@ const initialState = {
   index: 0,
   answer: null,
   points: 0,
+  highScore: 0,
+  secondsRemaining: null,
 };
 
 function reducer(state, action) {
@@ -38,16 +44,17 @@ function reducer(state, action) {
       return {
         ...state,
         status: "active",
+        secondsRemaining: state.questions.length * SECS_PER_QUESTION,
       };
 
     case "newAnswer":
-      const question = state.question.at(state.index);
+      const question = state.questions.at(state.index);
       return {
         ...state,
         answer: action.payload,
         points:
           action.payload === question.correctOption
-            ? state.points + 1
+            ? state.points + question.points
             : state.points,
       };
 
@@ -73,6 +80,13 @@ function reducer(state, action) {
         status: "ready",
       };
 
+    case "tick":
+      return {
+        ...state,
+        secondsRemaining: state.secondsRemaining - 1,
+        status: state.secondsRemaining === 0 ? "finished" : state.status,
+      };
+
     default: {
       throw new Error("Action unknown");
     }
@@ -81,10 +95,10 @@ function reducer(state, action) {
 
 export default function App() {
   //   object function
-  const [{ questions, status, index, answer, points }, dispatch] = useReducer(
-    reducer,
-    initialState
-  );
+  const [
+    { questions, status, index, answer, points, highScore, secondsRemaining },
+    dispatch,
+  ] = useReducer(reducer, initialState);
 
   const numQuestions = questions.length;
   const maxPossiblePoints = questions.reduce(
@@ -102,12 +116,14 @@ export default function App() {
   return (
     <div className="app">
       <Header />
+
       <Main>
         {status === "loading" && <Loader />}
         {status === "error" && <Error />}
         {status === "ready" && (
           <StartScreen numQuestions={numQuestions} dispatch={dispatch} />
         )}
+
         {status === "active" && (
           <>
             <Progress
@@ -117,15 +133,33 @@ export default function App() {
               maxPossiblePoints={maxPossiblePoints}
               answer={answer}
             />
+
             <Question
               question={questions[index]}
               dispatch={dispatch}
               answer={answer}
             />
 
-            <NextButton dispatch={dispatch} answer={answer} />
-            {status === "finished"}
+            <Footer>
+              <Timer dispatch={dispatch} secondsRemaining={secondsRemaining} />
+
+              <NextButton
+                dispatch={dispatch}
+                answer={answer}
+                numQuestions={numQuestions}
+                index={index}
+              />
+            </Footer>
           </>
+        )}
+
+        {status === "finished" && (
+          <FinishScreen
+            points={points}
+            maxPossiblePoints={maxPossiblePoints}
+            highScore={highScore}
+            dispatch={dispatch}
+          />
         )}
       </Main>
     </div>
