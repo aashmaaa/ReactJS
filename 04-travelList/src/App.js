@@ -1,5 +1,8 @@
 import { useState } from "react";
 import Logo from "./Logo";
+import Login from "./Login";
+import Home from "./Home";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 // const initialItems = [
 //   { id: 1, description: "Passports", quantity: 2, packed: false },
@@ -32,10 +35,15 @@ export default function App() {
     if (confirmed) setItems([]);
   }
 
+  function handleLogin() {
+    alert("login window");
+  }
+
   return (
     <div className="app">
       <Logo />
       <Form onAddItems={handleAddItems} />
+      <Login onLogin={handleLogin} />
       <PakingLists
         items={items}
         onDeleteItem={handleDeleteItem}
@@ -43,6 +51,12 @@ export default function App() {
         onClearList={handleClearList}
       />
       <Stats items={items} />
+      <Router>
+        <Routes>
+          <Route exact path="/" component={Home} />
+          <Route exact path="/login" component={Login} />
+        </Routes>
+      </Router>
     </div>
   );
 }
@@ -85,6 +99,9 @@ function Form({ onAddItems }) {
       />
 
       <button onClick={handleSubmit}>Add</button>
+      <p float="right">
+        Want to save your list!??<button onClick={handleSubmit}>Login</button>
+      </p>
     </form>
   );
 }
